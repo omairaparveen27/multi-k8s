@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels: # match a set of labels
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: stephengrider/multi-server
+          ports:
+            - containerPort: 5000 # port of container to be exposed
+          env: # adding all env variables needed by server
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service # name of cluster ip service
+            - name: REDIS_PORT
+              value: '6379' # env variables cannot be as int, has to be str
+            - name: PGUSER
+              value: postgres
+            - name: PGHOST
+              value: postgres-cluster-ip-service
+            - name: PGPORT
+              value: '5432'
+            - name: PGDATABASE
+              value: postgres
+            - name: PGPASSWORD # can have any name
+              valueFrom: # get the config from something
+                secretKeyRef:
+                  name: pgpassword # open the secret having name=pgpassword
+                  key: PGPASSWORD # key that we used when creating the secret imperatively
+ 
